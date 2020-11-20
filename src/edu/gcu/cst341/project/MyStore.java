@@ -145,5 +145,10 @@ public class MyStore {
 		System.out.println("Anastasia");
 	}
 
+	//added method to print my name
+	//jordan- 11/19/20	
+	private void jordan() {
+		System.out.println("Jordan");
+	}
 }
 
