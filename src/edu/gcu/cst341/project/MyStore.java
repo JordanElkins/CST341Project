@@ -2,9 +2,10 @@ package edu.gcu.cst341.project;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Scanner;
 
 public class MyStore {
-
+	private Scanner sc = new Scanner(System.in);
 	private String name; 
 	private DBConnect con;
 
@@ -12,7 +13,9 @@ public class MyStore {
 		this.name = name;
 		con = new DBConnect();
 	}
-
+	
+	//Added admin login
+	//Jordan 12/7/20
 	public void open() {
 		String user = null;
 		boolean exit = false;
@@ -33,7 +36,14 @@ public class MyStore {
 				}
 				break;
 			case 2:
-				admin();
+				user = adminLogin();
+				if (user != null) {
+					System.out.println("Login successful!!");
+					admin();
+				}
+				else {
+					System.out.println("Login unsuccessful");
+				}
 				break;
 			default:
 				open();
@@ -41,12 +51,15 @@ public class MyStore {
 		} while (!exit);
 	}
 
+	//Column Names
+	//Jordan 12/7/20
 	private String login() {
+		
 		String result = null;
 
 		String [] login = UserInterface.login();
 
-		String sql = "SELECT UserId, UserFirstName FROM users WHERE UserName = ? AND UserPassword = ? AND UserStatus = 1";
+		String sql = "SELECT user_id, user_first_name FROM users WHERE user_name = ? AND user_password = ? AND user_status = 1";
 
 		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
 			ps.setString(1, login[0]);
@@ -54,7 +67,7 @@ public class MyStore {
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				result = rs.getString("UserFirstName");
+				result = rs.getString("user_first_name");
 			}
 			else {
 				result = null;
@@ -65,6 +78,35 @@ public class MyStore {
 		}
 		return result;
 	}
+	
+	//Created Admin Login
+	//Jordan 12/7/20
+	private String adminLogin() {
+		
+		String result = null;
+
+		String [] login = UserInterface.login();
+
+		String sql = "SELECT user_id, user_first_name FROM users WHERE user_name = ? AND user_password = ? AND admin_status = 1";
+
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+			ps.setString(1, login[0]);
+			ps.setString(2, login[1]);
+			ResultSet rs = ps.executeQuery();
+
+			if (rs.next()) {
+				result = rs.getString("user_first_name");
+			}
+			else {
+				result = null;
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 
 	private void shop() {
 		switch (UserInterface.menuShop()) {
@@ -120,9 +162,36 @@ public class MyStore {
 		System.out.println();
 	}
 	
+	//Added code
+	//Jordan 12/7/20
 	private void createProduct() {
 		System.out.println("Create product...");
-		System.out.println();
+		System.out.println("Type the name of the new product and press enter.");
+		String item = sc.nextLine();
+		System.out.println("Type the product's price and press enter.");
+		Double price = sc.nextDouble();
+		sc.nextLine();
+		System.out.println("Is this item in stock? Type 1 for yes and 0 for no.");
+		int status = sc.nextInt();
+		sc.nextLine();
+		String sql = "INSERT INTO products (product_name, product_price, stock_status) VALUES (?, ?, ?)";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+			ps.setString(1, item);
+			ps.setDouble(2, price);
+			ps.setInt(3, status);
+			ps.execute();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		String prntstatus;
+		if (status == 1) {
+			prntstatus = "In Stock";
+		} else {
+			prntstatus = "Out of Stock";
+		}
+		System.out.println("New Item Added Successfully" + "\nProduct Name: " + item + "\nPrice: " + price + "\nStock Status: " +  prntstatus + "\n");
+		admin();
 	}
 	
 	private void readProducts() {
