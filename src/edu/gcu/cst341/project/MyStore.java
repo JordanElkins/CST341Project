@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.util.Scanner;
 import java.sql.SQLException;
 
-
 public class MyStore {
 	static Scanner sc = new Scanner(System.in);
 	private String name; 
