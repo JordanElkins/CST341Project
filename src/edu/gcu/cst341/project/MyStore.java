@@ -62,10 +62,8 @@ public class MyStore {
 		String result = null;
 
 		String [] login = UserInterface.login();
-
 //		Altered the select statement to match the database. 
 //		Anastasia Sullivan 11/23/2020
-
 		String sql = "SELECT user_id, user_first_name FROM users WHERE user_name = ? AND user_password = ? AND user_status = 1";
 
 		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
@@ -159,6 +157,8 @@ public class MyStore {
 		case 4:
 			deleteProduct();
 			break;	
+		case 5:
+			updateProductStatus();
 		default:
 			open();
 		}
@@ -181,7 +181,7 @@ public class MyStore {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-		
+		shop();
 	}
 //	Method Outline Created 
 //	Anastasia Sullivan 12/05/2020	
@@ -212,6 +212,7 @@ public class MyStore {
 	private void deleteCartItem() {
 		System.out.println("Delete from cart...");
 		System.out.println();
+		shop();
 	}
 	
 	//Added code
@@ -319,6 +320,7 @@ public class MyStore {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+		admin();
 	}
 //	Method Outline Created 
 //	Anastasia Sullivan 12/05/2020	
@@ -329,7 +331,7 @@ public class MyStore {
 		System.out.println("Please enter the product ID number for the item you wish to delete.");
 		int id = sc.nextInt();
 		sc.nextLine();
-		String sql = "UPDATE products SET stock_status = 0 WHERE product_id = ?";
+		String sql = "DELETE FROM products WHERE product_id = ?";
 		try(PreparedStatement ps = con.getConnection().prepareStatement(sql)){
 			ps.setInt(1, id);
 		    ps.executeUpdate();
@@ -337,6 +339,30 @@ public class MyStore {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+		admin();
+	}
+//	Method added to provide the admin with an streamlined way to change product status.	
+//	Anastasia Sullivan 12/05/2020
+	private void updateProductStatus() {
+		System.out.println("Updating Product Status...");
+		System.out.println("Here are the current products.");
+		readProducts();
+		System.out.println("Please enter the product ID number for the item.");
+		int id = sc.nextInt();
+		sc.nextLine();
+		System.out.println("Do you wish to change the status to in stock or out of stock. Type 1 for in stock or type 2 for out of stock.");
+		int status = sc.nextInt();
+		sc.nextLine();
+		String sql = "UPDATE products SET stock_status = ? WHERE product_id = ?";
+		try(PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+			ps.setInt(1, id);
+			ps.setInt(2, status);
+		    ps.executeUpdate();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		admin();
 	}
 //	added a method to print my name
 //	Anastasia Sullivan 11/19/2020

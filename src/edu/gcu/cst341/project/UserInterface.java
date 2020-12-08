@@ -72,7 +72,8 @@ public class UserInterface {
 			System.out.println("1] Add product");
 			System.out.println("2] See all products");
 			System.out.println("3] Update a product");
-			System.out.println("4] Remove a product");	
+			System.out.println("4] Remove a product");
+			System.out.println("5] Change a prodct's availability");
 			System.out.println("==================");
 			option = sc.nextInt();
 			sc.nextLine();
