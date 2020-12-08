@@ -208,7 +208,8 @@ public class MyStore {
 			e.printStackTrace();
 		}
 	}
-	
+	// added new method
+	// andrew - 12/07/2020
 	private void deleteCartItem() {
 		System.out.println("Delete from cart...");
 		System.out.println("Choose from the following items to delete:");
@@ -308,7 +309,8 @@ public class MyStore {
 			e.printStackTrace();
 		}
 	}
-	
+	// added new method
+	// andrew - 12/07/2020
 	private void readAvailShopProducts() {
 		System.out.println("View (Read) all products...");
 		System.out.println();
