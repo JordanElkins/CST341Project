@@ -18,7 +18,7 @@ public class MyStore {
 		con = new DBConnect();
 	}
 	
-	//Added admin login
+	//Added admin login and added \n for spacing
 	//Jordan 12/7/20
 	public void open() {
 		String user = null;
@@ -26,27 +26,27 @@ public class MyStore {
 		do {
 			switch (UserInterface.menuMain()) {
 			case 0:
-				System.out.println("Thank you! Come again!");
+				System.out.println("\nThank you! Come again!");
 				exit = true;
 				break;
 			case 1:
 				user = login();
 				if (user != null) {
-					System.out.println("Login successful!!");
+					System.out.println("Login successful!!\n");
 					shop();
 				}
 				else {
-					System.out.println("Login unsuccessful");
+					System.out.println("Login unsuccessful\n");
 				}
 				break;
 			case 2:
 				user = adminLogin();
 				if (user != null) {
-					System.out.println("Login successful!!");
+					System.out.println("Login successful!!\n");
 					admin();
 				}
 				else {
-					System.out.println("Login unsuccessful");
+					System.out.println("Login unsuccessful\n");
 				}
 				break;
 			default:
@@ -55,7 +55,7 @@ public class MyStore {
 		} while (!exit);
 	}
 
-	//Column Names
+	//Column Names and \n for spacing
 	//Jordan 12/7/20
 	private String login() {
 		
@@ -75,7 +75,7 @@ public class MyStore {
 				result = rs.getString("user_first_name");
 				userID = rs.getInt("user_id");
 				customer = rs.getNString("user_first_name");
-				System.out.println("Thank you, " + customer + " you have successfully logged in.");
+				System.out.println("\nThank you, " + customer + " you have successfully logged in.");
 			}
 			else {
 				result = null;
@@ -115,25 +115,32 @@ public class MyStore {
 		return result;
 	}
 
-
+	//added readAvailProducts, pushed all items down
+	//Jordan 12/7/20
 	private void shop() {
 		switch (UserInterface.menuShop()) {
 		case 0:
 			return;
 		case 1:
-			createCartItem();
+			readAvailProducts();
 			break;
 		case 2:
-			readCartItems();
+			createCartItem();
 			break;
 		case 3:
+			readCartItems();
+			break;
+		case 4:
 			deleteCartItem();
 			break;
+		
 		default:
 			return;
 		}
 	}
-
+    
+//	changed option 2 to readAllProducts
+//  Jordan 12/7/20
 	private void admin() {
 		switch (UserInterface.menuAdmin()) {
 		case 0:
@@ -142,7 +149,7 @@ public class MyStore {
 			createProduct();
 			break;
 		case 2:
-			readProducts();
+			readAllProducts();
 			break;
 		case 3:
 			updateProduct();
@@ -160,7 +167,7 @@ public class MyStore {
 //	Anastasia Sullivan 12/05/2020
 	private void createCartItem() {
 		System.out.println("Add (Create) item to cart...");
-		readProducts();
+		readAvailProducts();
 		System.out.println("What is the product ID of the item you wish to add?");
 		String item = sc.nextLine();
 		System.out.println(item);
@@ -237,20 +244,51 @@ public class MyStore {
 			prntstatus = "Out of Stock";
 		}
 		System.out.println("New Item Added Successfully" + "\nProduct Name: " + item + "\nPrice: " + price + "\nStock Status: " +  prntstatus + "\n");
+	
 		admin();
 	}
 //	Method Outline Created 
 //	Anastasia Sullivan 12/05/2020
-	private void readProducts() {
+	//Modified print statement
+	//Jordan 12/7/20
+	private void readAllProducts() {
+		System.out.println("View (Read) all products...");
+		System.out.println();
+		String sql = "SELECT * FROM giveusyourmoney.products";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+			ResultSet rs = ps.executeQuery();
+			System.out.println("Product ID   Product Name     Product Price    Stock Status");
+			System.out.println("-----------------------------------------------------------");
+			while(rs.next()) {
+				String status;
+				int prntstatus = rs.getInt("stock_status");
+				if (prntstatus == 1) {
+					 status = "In Stock";
+				} else {
+					 status = "Out of Stock";
+				}
+				System.out.printf("%-12s %-15s  $%-15s %-5s\n", rs.getInt("product_id"), rs.getString("product_name"), rs.getString("product_price"), status);
+				
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		admin();
+	}
+	
+	//Created Method for customers to view all products that are in stock only
+	//Jordan 12/7/20
+	private void readAvailProducts() {
 		System.out.println("View (Read) all products...");
 		System.out.println();
 		String sql = "SELECT product_id, product_name, product_price FROM giveusyourmoney.products WHERE stock_status = 1";
 		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
 			ResultSet rs = ps.executeQuery();
-			System.out.println("Product ID   Product Name   Product Price");
-			System.out.println("------------------------------");
+			System.out.println("Product ID   Product Name     Product Price");
+			System.out.println("-------------------------------------------");
 			while(rs.next()) {
-				System.out.println(rs.getInt("product_id") + " " + rs.getString("product_name")+ " " + rs.getString("product_price"));
+				System.out.printf("%-12s %-15s  $%-15s\n", rs.getInt("product_id"), rs.getString("product_name"), rs.getString("product_price"));
 			}
 		}
 		catch(Exception e) {
@@ -263,7 +301,7 @@ public class MyStore {
 	private void updateProduct() {
 		System.out.println("Update product...");
 		System.out.println("Which of the following products would you like to update?");
-		readProducts();
+		readAllProducts();
 		System.out.println("Type the Product ID number and press enter.");
 		int id = sc.nextInt();
 		sc.nextLine();
@@ -285,11 +323,11 @@ public class MyStore {
 		admin();
 	}
 //	Method Outline Created 
-//	Anastasia Sullivan 12/05/2020		
+//	Anastasia Sullivan 12/05/2020	
 	private void deleteProduct() {
 		System.out.println("Delete product...");
 		System.out.println("Here are the current products.");
-		readProducts();
+		readAllProducts();
 		System.out.println("Please enter the product ID number for the item you wish to delete.");
 		int id = sc.nextInt();
 		sc.nextLine();
