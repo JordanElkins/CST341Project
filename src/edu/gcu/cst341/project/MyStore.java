@@ -13,6 +13,7 @@ public class MyStore {
 	private int userID;
 	private String customer;
 
+	
 	MyStore (String name){
 		this.name = name;
 		con = new DBConnect();
@@ -122,7 +123,7 @@ public class MyStore {
 		case 0:
 			return;
 		case 1:
-			readAvailProducts();
+			readAvailShopProducts();
 			break;
 		case 2:
 			createCartItem();
@@ -211,7 +212,20 @@ public class MyStore {
 	
 	private void deleteCartItem() {
 		System.out.println("Delete from cart...");
-		System.out.println();
+		System.out.println("Choose from the following items to delete:");
+		readCartItems();
+		System.out.println("Type the Product ID of the item you wish to remove, and press enter.");
+		int id = sc.nextInt();
+		sc.nextLine();
+		String sql = "DELETE FROM shopping_cart WHERE user_id = ? and product_id = ?";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+			ps.setInt(1, id);
+			ps.setInt(2, userID);
+			ps.execute();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		shop();
 	}
 	
@@ -294,8 +308,26 @@ public class MyStore {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void readAvailShopProducts() {
+		System.out.println("View (Read) all products...");
+		System.out.println();
+		String sql = "SELECT product_id, product_name, product_price FROM giveusyourmoney.products WHERE stock_status = 1";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+			ResultSet rs = ps.executeQuery();
+			System.out.println("Product ID   Product Name     Product Price");
+			System.out.println("-------------------------------------------");
+			while(rs.next()) {
+				System.out.printf("%-12s %-15s  $%-15s\n", rs.getInt("product_id"), rs.getString("product_name"), rs.getString("product_price"));
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		shop();
 	}
+	
 //	Method Outline Created 
 //	Anastasia Sullivan 12/05/2020	
 	private void updateProduct() {
@@ -327,12 +359,32 @@ public class MyStore {
 	private void deleteProduct() {
 		System.out.println("Delete product...");
 		System.out.println("Here are the current products.");
-		readAllProducts();
+		String sql = "SELECT products.* FROM giveusyourmoney.products " + 
+				"LEFT JOIN shopping_cart ON products.product_id = shopping_cart.product_id " + 
+				"WHERE shopping_cart.product_id IS NULL;";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+			ResultSet rs = ps.executeQuery();
+			System.out.println("Product ID   Product Name     Product Price    Stock Status");
+			System.out.println("-----------------------------------------------------------");
+			while(rs.next()) {
+				String status;
+				int prntstatus = rs.getInt("stock_status");
+				if (prntstatus == 1) {
+					 status = "In Stock";
+				} else {
+					 status = "Out of Stock";
+				}
+				System.out.printf("%-12s %-15s  $%-15s %-5s\n", rs.getInt("product_id"), rs.getString("product_name"), rs.getString("product_price"), status);	
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 		System.out.println("Please enter the product ID number for the item you wish to delete.");
 		int id = sc.nextInt();
 		sc.nextLine();
-		String sql = "DELETE FROM products WHERE product_id = ?";
-		try(PreparedStatement ps = con.getConnection().prepareStatement(sql)){
+		String sql2 = "DELETE FROM products WHERE product_id = ?";
+		try(PreparedStatement ps = con.getConnection().prepareStatement(sql2)){
 			ps.setInt(1, id);
 		    ps.executeUpdate();
 		}
@@ -346,7 +398,7 @@ public class MyStore {
 	private void updateProductStatus() {
 		System.out.println("Updating Product Status...");
 		System.out.println("Here are the current products.");
-		readProducts();
+		readAllProducts();
 		System.out.println("Please enter the product ID number for the item.");
 		int id = sc.nextInt();
 		sc.nextLine();
@@ -382,4 +434,3 @@ public class MyStore {
 
 	}
 }
-
