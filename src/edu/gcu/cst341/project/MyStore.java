@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.Scanner;
 import java.sql.SQLException;
 
+
+
 public class MyStore {
 	static Scanner sc = new Scanner(System.in);
 	private String name;
@@ -122,7 +124,7 @@ public class MyStore {
 			createCartItem();
 			break;
 		case 3:
-			readCartItems();
+			readShopCartItems();
 			break;
 		case 4:
 			deleteCartItem();
@@ -166,17 +168,22 @@ public class MyStore {
 		System.out.println("Add (Create) item to cart...");
 		readAvailProducts();
 		System.out.println("What is the product ID of the item you wish to add?");
-		String item = sc.nextLine();
-		System.out.println(item);
-		System.out.println(userID);
-		String sqlInsert = "INSERT INTO giveusyourmoney.shopping_cart (user_id, product_id) VALUES (?, ?)";
-		try (PreparedStatement ps = con.getConnection().prepareStatement(sqlInsert)) {
-			ps.setInt(1, userID);
-			ps.setString(2, item);
-			ps.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
+		int item = sc.nextInt();
+		sc.nextLine();
+		System.out.println("How Many Would You Like to Add?");
+		int quantity = sc.nextInt();
+		sc.nextLine();
+		for (int i = 0; i < quantity; i++) {
+			String sqlInsert = "INSERT INTO giveusyourmoney.shopping_cart (user_id, product_id) VALUES (?, ?)";
+			try (PreparedStatement ps = con.getConnection().prepareStatement(sqlInsert)) {
+				ps.setInt(1, userID);
+				ps.setInt(2, item);
+				ps.executeUpdate();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
+		System.out.println("Item ID: " + item + " Was Added " + quantity + " Time(s)!");
 		System.out.println("\nPress \"ENTER\" to continue...\n");
 		try {
 			System.in.read();
@@ -220,13 +227,46 @@ public class MyStore {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		shop();
 	}
 
+	private void readShopCartItems() {
+		System.out.println("View (Read) cart...\n");
+		System.out.println(customer + ", Here are the contents of your shopping cart.");
+		String sql = "SELECT shopping_cart.product_id, products.product_name, products.product_price\n"
+				+ "FROM giveusyourmoney.shopping_cart\n"
+				+ "JOIN  products on shopping_cart.product_id = products.product_id\n"
+				+ "WHERE shopping_cart.user_id = ?";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)) {
+			ps.setInt(1, userID);
+			ResultSet rs = ps.executeQuery();
+			System.out.println("Product ID   Product Name     Product Price");
+			System.out.println("--------------------------------------------");
+			Double total = 0.00;
+			while (rs.next()) {
+				System.out.printf("%-12s %-15s  $%,.2f\n",rs.getInt("product_id"),rs.getString("product_name"),
+						rs.getDouble("product_price"));
+				
+				total = total + rs.getDouble("product_price");
+			}
+			System.out.println("--------------------------------------------");
+			System.out.printf("%-29s $%,.2f\n","Total", total);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("\nPress \"ENTER\" to continue...\n");
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		shop();
+	}
 	// added new method
 	// andrew - 12/07/2020
 //	Added "press enter to continue" before proceding to next menu and general pretty-fying
 //	Jordan 12/11/20
+//  Andrew 12/14/2020
+//  Fixed order of the SQL statement.
 	private void deleteCartItem() {
 		System.out.println("Delete from cart...");
 		System.out.println("Choose from the following items to delete:");
@@ -234,7 +274,7 @@ public class MyStore {
 		System.out.println("Type the Product ID of the item you wish to remove, and press enter.");
 		int id = sc.nextInt();
 		sc.nextLine();
-		String sql = "DELETE FROM shopping_cart WHERE user_id = ? and product_id = ?";
+		String sql = "DELETE FROM shopping_cart WHERE product_id = ? and user_id = ? ";
 		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)) {
 			ps.setInt(1, id);
 			ps.setInt(2, userID);
@@ -242,6 +282,7 @@ public class MyStore {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("Deleting " + id + " from Your Cart...\n");
 		System.out.println("\nPress \"ENTER\" to continue...\n");
 		try {
 			System.in.read();
