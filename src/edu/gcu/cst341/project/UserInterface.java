@@ -55,7 +55,7 @@ public class UserInterface {
 			System.out.println("1] Browse Inventory");
 			System.out.println("2] Add items to cart");
 			System.out.println("3] See items in cart");
-			System.out.println("4] Remove all items from cart");
+			System.out.println("4] Remove item(s) from cart");
 			System.out.println("==================");
 			option = sc.nextInt();
 			sc.nextLine();

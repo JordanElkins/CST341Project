@@ -50,7 +50,7 @@ public class MyStore {
 				}
 				break;
 			default:
-				open();
+				System.out.println("Input error... try again");
 			}
 		} while (!exit);
 	}
@@ -164,6 +164,8 @@ public class MyStore {
 //	Anastasia Sullivan 12/05/2020
 //	Added "press enter to continue" before proceding to next menu and general pretty-fying
 //	Jordan 12/11/20
+//	Added Select statement to display which item with the quantity selected,  product id, name and price once item added
+//	Jordan 12/17/20
 	private void createCartItem() {
 		System.out.println("Add (Create) item to cart...");
 		readAvailProducts();
@@ -183,7 +185,21 @@ public class MyStore {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Item ID: " + item + " Was Added " + quantity + " Time(s)!");
+		String sql = "SELECT product_id, product_name, product_price FROM giveusyourmoney.products WHERE product_id = ?";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)) {
+			ps.setInt(1, item);
+			ps.execute();
+			ResultSet rs = ps.executeQuery();
+			System.out.println("Quantity Product ID   Product Name     Product Price");
+			System.out.println("----------------------------------------------------");
+			while (rs.next()) {
+				System.out.printf("%-8s %-12s %-15s  $%,-5.2f\n", quantity, rs.getInt("product_id"), rs.getString("product_name"),
+						rs.getDouble("product_price"));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+//		System.out.println("Item ID: " + item + " Was Added " + quantity + " Time(s)!");
 		System.out.println("\nPress \"ENTER\" to continue...\n");
 		try {
 			System.in.read();
@@ -267,6 +283,8 @@ public class MyStore {
 //	Jordan 12/11/20
 //  Andrew 12/14/2020
 //  Fixed order of the SQL statement.
+//	Added Select statement to display which item with product id, name and price once item added
+//	Jordan 12/17/20
 	private void deleteCartItem() {
 		System.out.println("Delete from cart...");
 		System.out.println("Choose from the following items to delete:");
@@ -282,7 +300,21 @@ public class MyStore {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("Deleting " + id + " from Your Cart...\n");
+		sql = "SELECT product_id, product_name, product_price FROM giveusyourmoney.products WHERE product_id = ?";
+		try (PreparedStatement ps = con.getConnection().prepareStatement(sql)) {
+			ps.setInt(1, id);
+			ps.execute();
+			ResultSet rs = ps.executeQuery();
+			System.out.println("Product ID   Product Name     Product Price");
+			System.out.println("-------------------------------------------");
+			while (rs.next()) {
+				System.out.printf("%-12s %-15s  $%,-5.2f\n", rs.getInt("product_id"), rs.getString("product_name"),
+						rs.getDouble("product_price"));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("\nRemoved item(s) from Your Cart...\n");
 		System.out.println("\nPress \"ENTER\" to continue...\n");
 		try {
 			System.in.read();
@@ -506,6 +538,8 @@ public class MyStore {
 //	Anastasia Sullivan 12/05/2020	
 //	Added "press enter to continue" before proceding to next menu and general pretty-fying
 //	Jordan 12/11/20
+//	Added Additional beautification
+//	Jordan 12/19/20
 	private void deleteProduct() {
 		System.out.println("Delete product...");
 		System.out.println("Here are the current products.");
@@ -541,6 +575,11 @@ public class MyStore {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("\nItem Deleted!\n");
+		System.out.println("Product ID");
+		System.out.println("----------");
+		System.out.printf("%6s",id);
+			
 		System.out.println("\nPress \"ENTER\" to continue...\n");
 		try {
 			System.in.read();
